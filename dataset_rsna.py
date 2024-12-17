@@ -22,14 +22,14 @@ class myData(Dataset):
     def __getitem__(self, index):
         if index < len(self.normal_list):
             img_path = os.path.join(self.normal_root, self.normal_list[index])
-            img = Image.open(img_path).convert('L')
+            img = Image.open(img_path).convert('RGB')
             mask = np.zeros([224,224])
             mask=np.array(mask)
             mask = torch.from_numpy(mask).long()
             label = 0
         else:
             img_path = os.path.join(self.abnormal_root, self.abnormal_list[index-len(self.normal_list)])
-            img = Image.open(img_path).convert('L')
+            img = Image.open(img_path).convert('RGB')
             mask = Image.open(self.mask_root+'/'+self.mask_list[index-len(self.normal_list)]).convert('L')
             mask = transforms.Resize((224,224))(mask)
             mask=np.array(mask)
