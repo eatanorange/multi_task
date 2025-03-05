@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import cv2 as cv
+
 import torch
 import torchvision
 from torch import nn
@@ -14,6 +14,7 @@ from tqdm import tqdm
 from dataset_rsna import rsna_train_dataset,rsna_val_dataset
 from dataset_covid import covid_train_dataset,covid_val_dataset    
 from resunet import model
+
 import sys
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim.lr_scheduler as lr_scheduler
@@ -72,9 +73,16 @@ for epoch in range(epochs):
             param.requires_grad = False
         for param in model.classifier_rsna.parameters():
             param.requires_grad = True
-        for param in model.decoder.parameters():
+        for param in model.up1.parameters():
             param.requires_grad = True
-
+        for param in model.up2.parameters():
+            param.requires_grad = True
+        for param in model.up3.parameters():
+            param.requires_grad = True
+        for param in model.up4.parameters():
+            param.requires_grad = True
+        for param in model.outc.parameters():
+            param.requires_grad = True
         
         model.train()
         train_bar=tqdm(rsna_train_dataloader)
@@ -135,7 +143,15 @@ for epoch in range(epochs):
             param.requires_grad = True
         for param in model.classifier_rsna.parameters():
             param.requires_grad = False
-        for param in model.decoder.parameters():
+        for param in model.up1.parameters():
+            param.requires_grad = False
+        for param in model.up2.parameters():
+            param.requires_grad = False
+        for param in model.up3.parameters():
+            param.requires_grad = False
+        for param in model.up4.parameters():
+            param.requires_grad = False
+        for param in model.outc.parameters():
             param.requires_grad = False
         model.train()
         train_bar=tqdm(covid_train_dataloader)

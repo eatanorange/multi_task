@@ -88,9 +88,12 @@ class UNet(nn.Module):
         self.down3 = (Down(256, 512))
         factor = 2 if bilinear else 1
         self.down4 = (Down(512, 1024 // factor))
-        self.classify_layer=nn.Sequential(nn.AdaptiveAvgPool2d((1,1)),
-                                          nn.Flatten(),
-                                          nn.Linear(1024, 2))
+        self.classifier_rsna= nn.Sequential(nn.AdaptiveAvgPool2d((7,7)),
+                                        nn.Flatten(),
+                                        nn.Linear(50176, n_classes))
+        self.classifier_covid= nn.Sequential(nn.AdaptiveAvgPool2d((7,7)),
+                                        nn.Flatten(),
+                                        nn.Linear(50176, n_classes))
         self.up1 = (Up(1024, 512 // factor, bilinear))
         self.up2 = (Up(512, 256 // factor, bilinear))
         self.up3 = (Up(256, 128 // factor, bilinear))
@@ -103,14 +106,14 @@ class UNet(nn.Module):
         x3 = self.down2(x2)
         x4 = self.down3(x3)
         x5 = self.down4(x4)
-        
-        classify=self.classify_layer(x5)
+        classify_rsna = self.classifier_rsna(x5)
+        classify_covid = self.classifier_covid(x5)
         x = self.up1(x5, x4)
         x = self.up2(x, x3)
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         segment = self.outc(x)
-        return classify,segment
+        return classify_rsna,segment,classify_covid
 
     def use_checkpointing(self):
         self.inc = torch.utils.checkpoint(self.inc)
@@ -124,7 +127,7 @@ class UNet(nn.Module):
         self.up4 = torch.utils.checkpoint(self.up4)
         self.outc = torch.utils.checkpoint(self.outc)
 
-model=UNet(n_channels=1,n_classes=2)
+model=UNet(n_channels=3,n_classes=2)
 model.cuda()
-if __name__=='__main__':
+if __name__ == '__main__':
     print(model)
